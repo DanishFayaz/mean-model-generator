@@ -1,0 +1,101 @@
+<div class="header bg-gradient-danger pb-8 pt-5 pt-md-8">
+  <div class="container-fluid">
+    <div class="header-body">
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid mt--7">
+  <div class="row">
+    <div class="col-xl-12 mb-5 mb-xl-0">
+      <div class="card bg-gradient-neutral shadow" *ngIf="showCode">
+        <div class="card-header bg-gradient-blue">
+          <div class="row align-items-stretch">
+            <div class="col">
+              <h6 class="text-uppercase text-light ls-1 mb-1">Output</h6>
+              <h2 class="text-white text-capitalize mb-0">Code View</h2>
+            </div>
+            <div class="align-content-end">
+              <button class="btn btn-icon btn-3 btn-warning" (click)="onSubmit()" type="button">
+                <span class="btn-inner--icon"><i class="ni ni-bold-left"></i></span>
+                <span class="btn-inner--text">Back</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <h2>Mongoose Schema</h2>
+              <pre><code [highlight]="schemaTemplate"></code></pre>
+            </div>
+            <div class="col">
+              <h2>Typescript Model</h2>
+              <pre><code [highlight]="modelTemplate"></code></pre>
+            </div>
+            <div class="col">
+              <h2>Angular Form Model</h2>
+              <pre><code [highlight]="formHeader"></code></pre>
+              <pre><code [highlight]="formTemplate"></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-gradient-neutral shadow" *ngIf="!showCode">
+        <div class="card-header bg-gradient-blue">
+          <div class="row align-items-stretch">
+            <div class="col">
+              <h6 class="text-uppercase text-light ls-1 mb-1">Builder</h6>
+              <h2 class="text-white text-capitalize mb-0">Data Model</h2>
+            </div>
+            <div class="align-content-end">
+              <button class="btn btn-icon btn-3 btn-success" (click)="pushGroup()" type="button">
+                <span class="btn-inner--icon"><i class="ni ni-fat-add"></i></span>
+                <span class="btn-inner--text">Add</span>
+              </button>
+              <button class="btn btn-icon btn-3 btn-default" (click)="seedDummy()" type="button">
+                <span class="btn-inner--icon"><i class="ni ni-button-power"></i></span>
+                <span class="btn-inner--text">Demo</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="dataModelForm">
+            <div formArrayName="model" *ngFor="let item of dataModelForm.get('model').controls; let i = index;">
+              <div [formGroupName]="i" class="row">
+                <div class="col-lg-4 col-md-3">
+                  <div class="form-group">
+                    <input type="text" formControlName="propertyName" class="form-control" placeholder="Property Name">
+                  </div>
+                </div>
+                <div class="col-lg-4 col-md-3">
+                  <div class="form-group">
+                    <select formControlName="propertyType" class="form-control" placeholder="Property Type">
+                      <option *ngFor="let type of mongooseSchemaTypes" [value]="type"> {{type}} </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-lg-4 col-md-3">
+                  <div class="form-group">
+                    <div class="custom-control custom-checkbox mb-3">
+                      <input class="custom-control-input" [name]="i" formControlName="required" [id]="i" type="checkbox"
+                        checked="">
+                      <label class="custom-control-label" [for]="i">Required?</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4 col-md-3">
+              <div class="form-group">
+                <button class="btn btn-icon btn-3 btn-primary" (click)="onSubmit()" type="button">Generate</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
