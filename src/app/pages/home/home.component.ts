@@ -49,7 +49,7 @@ export class HomeComponent implements OnInit {
       this.fb.group({
         propertyName: ["gender", Validators.required],
         propertyType: ["Boolean", Validators.required],
-        default: ["male"],
+        default: ["0"],
         required: [false, Validators.required],
         propLength: [false],
         minLength: [0],
@@ -117,14 +117,31 @@ export class HomeComponent implements OnInit {
     let schemaBody = "";
 
     model.map(item => {
+      const defaultTemplate = item.default ? `default: ${item.default}` : "";
+      // const validateLengthTemplate = (item.propertyType == "Number") ? `min`
+
       if (item.propertyName) {
+        const propTypeValidatorMin =
+          item.propertyType == "Number" ? "min" : "minlength";
+        const propTypeValidatorMax =
+          item.propertyType == "Number" ? "max" : "maxlength";
+
         if (item.required && item.propLength) {
           schemaBody = schemaBody.concat(`
           ${item.propertyName}: {
               type: ${this.deduceSchemaType(item.propertyType)},
               ${item.required ? "required: true," : ""}
-              ${item.propLength ? `minlength:${item.minLength},` : ``}
-              ${item.propLength ? `maxlength:${item.maxLength}` : ``}
+              ${
+                item.propLength
+                  ? `${propTypeValidatorMin}:${item.minLength},`
+                  : ``
+              }
+              ${
+                item.propLength
+                  ? `${propTypeValidatorMax}:${item.maxLength}`
+                  : ``
+              }
+              ${defaultTemplate}
             },
           `);
         } else if (item.required && !item.propLength) {
@@ -132,21 +149,39 @@ export class HomeComponent implements OnInit {
           ${item.propertyName}: {
               type: ${this.deduceSchemaType(item.propertyType)},
               ${item.required ? "required: true," : ""}
+              ${defaultTemplate}
             },
           `);
         } else if (item.propLength && !item.required) {
           schemaBody = schemaBody.concat(`
           ${item.propertyName}: {
               type: ${this.deduceSchemaType(item.propertyType)},
-              ${item.propLength ? `minlength:${item.minLength},` : ``}
               ${
-                item.propLength ? `maxlength:${item.maxLength}` : ``
+                item.propLength
+                  ? `${propTypeValidatorMin}:${item.minLength},`
+                  : ``
               }
+              ${
+                item.propLength
+                  ? `${propTypeValidatorMax}:${item.maxLength}`
+                  : ``
+              }${defaultTemplate}
             },
           `);
         } else {
-          schemaBody = schemaBody.concat(`
-          ${item.propertyName}: ${this.deduceSchemaType(item.propertyType)},`);
+          if (defaultTemplate) {
+            schemaBody = schemaBody.concat(`
+            ${item.propertyName}: {
+              type: ${this.deduceSchemaType(item.propertyType)},
+              ${defaultTemplate}
+            },
+            `);
+          } else {
+            schemaBody = schemaBody.concat(`
+            ${item.propertyName}: ${this.deduceSchemaType(
+              item.propertyType
+            )},`);
+          }
         }
       }
     });
@@ -181,12 +216,22 @@ export class HomeComponent implements OnInit {
             ? `[${requiredTemplate},${lengthValidatorTemplate}]`
             : `${
                 requiredTemplate
-                  ? `[${requiredTemplate}]`
-                  : `[${lengthValidatorTemplate}]`
+                  ? `${requiredTemplate ? `[${requiredTemplate}]` : ""}`
+                  : `${
+                      lengthValidatorTemplate
+                        ? `[${lengthValidatorTemplate}]`
+                        : ""
+                    }`
               }`;
 
+        item.default =
+          item.propertyType == "Number"
+            ? item.default
+            : item.default == null
+            ? null
+            : `'${item.default}'`;
         formBody = formBody.concat(`
-        ${item.propertyName}: ['', ${controlSpec}]`);
+        ${item.propertyName}: [${item.default}, ${controlSpec}]`);
       }
     });
 
