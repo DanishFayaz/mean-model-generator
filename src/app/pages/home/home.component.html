@@ -65,25 +65,53 @@
           <form [formGroup]="dataModelForm">
             <div formArrayName="model" *ngFor="let item of dataModelForm.get('model').controls; let i = index;">
               <div [formGroupName]="i" class="row">
-                <div class="col-lg-4 col-md-3">
+                <div class="col-lg-2 col-md-2">
                   <div class="form-group">
                     <input type="text" formControlName="propertyName" class="form-control" placeholder="Property Name">
                   </div>
                 </div>
-                <div class="col-lg-4 col-md-3">
+                <div class="col-lg-2 col-md-2">
                   <div class="form-group">
                     <select formControlName="propertyType" class="form-control" placeholder="Property Type">
                       <option *ngFor="let type of mongooseSchemaTypes" [value]="type"> {{type}} </option>
                     </select>
                   </div>
                 </div>
-                <div class="col-lg-4 col-md-3">
+                <div class="col-lg-2 col-md-2">
+                  <div class="form-group">
+                      <input type="text" formControlName="default" class="form-control" placeholder="Default Value">
+                  </div>
+                </div>
+
+                <div class="col-lg-1 col-md-2">
+                    <div class="form-group">
+                      <div class="custom-control custom-checkbox mb-3">
+                        <input class="custom-control-input" [name]="i+'-required'" formControlName="required"
+                          [id]="i+'-required'" type="checkbox">
+                        <label class="custom-control-label" [for]="i+'-required'">Required?</label>
+                      </div>
+                    </div>
+                  </div>
+
+                <div class="col-lg-1 col-md-2">
                   <div class="form-group">
                     <div class="custom-control custom-checkbox mb-3">
-                      <input class="custom-control-input" [name]="i" formControlName="required" [id]="i" type="checkbox"
-                        checked="">
-                      <label class="custom-control-label" [for]="i">Required?</label>
+                      <input class="custom-control-input" [name]="i+'-length'" formControlName="propLength"
+                        [id]="i+'-length'" type="checkbox">
+                      <label class="custom-control-label" [for]="i+'-length'">Length?</label>
                     </div>
+                  </div>
+                </div>
+
+                <div class="col-lg-1 col-md-2">
+                  <div class="form-group" *ngIf="getModelGroup(i) && getModelGroup(i).controls['propLength'].value">
+                    <input type="number" formControlName="minLength" class="form-control" placeholder="Min">
+                  </div>
+                </div>
+
+                <div class="col-lg-1 col-md-2">
+                  <div class="form-group" *ngIf="getModelGroup(i) && getModelGroup(i).controls['propLength'].value">
+                    <input type="number" formControlName="maxLength" class="form-control" placeholder="Max">
                   </div>
                 </div>
               </div>

@@ -37,15 +37,23 @@ export class HomeComponent implements OnInit {
     this.dataModelForm = this.fb.group({
       model: this.fb.array([this.addModelGroup()])
     });
+    this.pushGroup();
   }
 
   seedDummy(): void {
+    this.dataModelForm = this.fb.group({
+      model: this.fb.array([])
+    });
     this.modelArray = this.dataModelForm.get("model") as FormArray;
     this.modelArray.push(
       this.fb.group({
         propertyName: ["gender", Validators.required],
         propertyType: ["Boolean", Validators.required],
-        required: [false, Validators.required]
+        default: ["male"],
+        required: [false, Validators.required],
+        propLength: [false],
+        minLength: [0],
+        maxLength: [0]
       })
     );
 
@@ -53,7 +61,11 @@ export class HomeComponent implements OnInit {
       this.fb.group({
         propertyName: ["age", Validators.required],
         propertyType: ["Number", Validators.required],
-        required: [true, Validators.required]
+        default: ["20"],
+        required: [true, Validators.required],
+        propLength: [true],
+        minLength: [1],
+        maxLength: [2]
       })
     );
 
@@ -61,7 +73,11 @@ export class HomeComponent implements OnInit {
       this.fb.group({
         propertyName: ["name", Validators.required],
         propertyType: ["String", Validators.required],
-        required: [true, Validators.required]
+        default: [],
+        required: [true, Validators.required],
+        propLength: [true],
+        minLength: [3],
+        maxLength: [9]
       })
     );
   }
@@ -70,8 +86,19 @@ export class HomeComponent implements OnInit {
     return this.fb.group({
       propertyName: ["", Validators.required],
       propertyType: ["", Validators.required],
-      required: [true, Validators.required]
+      default: [""],
+      required: [true, Validators.required],
+      propLength: [false, Validators.required],
+      minLength: [""],
+      maxLength: [""]
     });
+  }
+
+  getModelGroup(index: number): FormGroup {
+    if (this.modelArray && this.modelArray.length) {
+      const formGroup = this.modelArray.controls[index] as FormGroup;
+      return formGroup;
+    }
   }
 
   pushGroup(): void {
@@ -91,11 +118,30 @@ export class HomeComponent implements OnInit {
 
     model.map(item => {
       if (item.propertyName) {
-        if (item.required) {
+        if (item.required && item.propLength) {
           schemaBody = schemaBody.concat(`
           ${item.propertyName}: {
               type: ${this.deduceSchemaType(item.propertyType)},
-              required: true
+              ${item.required ? "required: true," : ""}
+              ${item.propLength ? `minlength:${item.minLength},` : ``}
+              ${item.propLength ? `maxlength:${item.maxLength}` : ``}
+            },
+          `);
+        } else if (item.required && !item.propLength) {
+          schemaBody = schemaBody.concat(`
+          ${item.propertyName}: {
+              type: ${this.deduceSchemaType(item.propertyType)},
+              ${item.required ? "required: true," : ""}
+            },
+          `);
+        } else if (item.propLength && !item.required) {
+          schemaBody = schemaBody.concat(`
+          ${item.propertyName}: {
+              type: ${this.deduceSchemaType(item.propertyType)},
+              ${item.propLength ? `minlength:${item.minLength},` : ``}
+              ${
+                item.propLength ? `maxlength:${item.maxLength}` : ``
+              }
             },
           `);
         } else {
@@ -119,10 +165,28 @@ export class HomeComponent implements OnInit {
 
     model.map(item => {
       if (item.propertyName) {
+        const requiredTemplate = item.required ? "Validators.required" : false;
+        const lengthValidatorTemplate = item.propLength
+          ? item.propertyType == "Number"
+            ? `Validators.min(${item.minLength}), Validators.max(${
+                item.maxLength
+              })`
+            : `Validators.minLength(${item.minLength}), Validators.maxLength(${
+                item.maxLength
+              })`
+          : false;
+
+        const controlSpec =
+          requiredTemplate && lengthValidatorTemplate
+            ? `[${requiredTemplate},${lengthValidatorTemplate}]`
+            : `${
+                requiredTemplate
+                  ? `[${requiredTemplate}]`
+                  : `[${lengthValidatorTemplate}]`
+              }`;
+
         formBody = formBody.concat(`
-        ${item.propertyName}: [''${
-          item.required ? ",[Validators.required]" : ""
-        }],`);
+        ${item.propertyName}: ['', ${controlSpec}]`);
       }
     });
 
@@ -138,9 +202,9 @@ export class HomeComponent implements OnInit {
     model.map(item => {
       if (item.propertyName) {
         modelBody = modelBody.concat(`
-        ${item.propertyName}: ${this.deduceModelType(item.propertyType)}${
-          item.required ? "?" : ""
-        },`);
+        ${item.propertyName}${item.required ? "?" : ""}: ${this.deduceModelType(
+          item.propertyType
+        )},`);
       }
     });
 
